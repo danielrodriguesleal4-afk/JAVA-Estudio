@@ -1,0 +1,189 @@
+package frc.robot;
+
+// Importações de controle do robô.
+import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+// Importações de Spark e tipo de Motor.
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+
+// Importações da Limelight.
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+
+
+// ======================================================== //
+
+
+public class Robot extends TimedRobot {
+
+  private static final String kDefaultAuto = "Default";
+  private static final String kCustomAuto = "My Auto";
+
+  private String m_autoSelected;
+  private final SendableChooser<String> m_chooser = new SendableChooser<>();
+
+  // =========================
+  // MOTOR
+  // =========================
+
+  private final SparkMax m_intakeMotor =
+      new SparkMax(14, MotorType.kBrushed);
+
+  // =========================
+  // CONTROLE XBOX
+  // =========================
+
+  // Porta 0 do Driver Station
+  private final XboxController m_xboxController =
+      new XboxController(0);
+
+  private double velocidade = 0.5;
+
+  // =========================
+  // LIMELIGHT
+  // =========================
+
+  private final NetworkTable limelight =
+      NetworkTableInstance.getDefault().getTable("limelight");
+
+  // ID da AprilTag 
+  private static final int TARGET_ID = 1;
+
+
+  public Robot() {
+
+    m_chooser.setDefaultOption(
+        "Default Auto",
+        kDefaultAuto
+    );
+
+    m_chooser.addOption(
+        "My Auto",
+        kCustomAuto
+    );
+
+    SmartDashboard.putData(
+        "Auto choices",
+        m_chooser
+    );
+  }
+
+
+  @Override
+  public void robotPeriodic() {
+
+    // =========================
+    // LIMELIGHT
+    // =========================
+
+    double tv =
+        limelight.getEntry("tv").getDouble(0);
+
+    double tid =
+        limelight.getEntry("tid").getDouble(-1);
+
+    // Encontrou uma AprilTag com o ID desejado?
+    if (tv == 1 && tid == TARGET_ID) {
+
+      // Liga o motor
+      m_intakeMotor.set(0.7);
+
+    } else {
+
+      // Para o motor
+      m_intakeMotor.set(0.0);
+    }
+  }
+
+
+  @Override
+  public void autonomousInit() {
+
+    m_autoSelected = m_chooser.getSelected();
+
+    System.out.println(
+        "Auto selected: " + m_autoSelected
+    );
+  }
+
+
+  @Override
+  public void autonomousPeriodic() {
+
+    switch (m_autoSelected) {
+
+      case kCustomAuto:
+        break;
+
+      case kDefaultAuto:
+      default:
+        break;
+    }
+  }
+
+
+  @Override
+  public void teleopInit() {}
+
+
+  @Override
+  public void teleopPeriodic() {
+
+    // =========================
+    // VELOCIDADE 100%
+    // =========================
+
+    if (m_xboxController.getYButton()) {
+      velocidade = 1.0;
+    }
+
+    // =========================
+    // VELOCIDADE 50%
+    // =========================
+
+    if (m_xboxController.getXButton()) {
+      velocidade = 0.5;
+    }
+
+    // =========================
+    // LIGAR MOTOR
+    // =========================
+
+    if (m_xboxController.getAButton()) {
+
+      m_intakeMotor.set(velocidade);
+
+    } else {
+
+      m_intakeMotor.set(0.0);
+    }
+  }
+
+
+  @Override
+  public void disabledInit() {}
+
+
+  @Override
+  public void disabledPeriodic() {}
+
+
+  @Override
+  public void testInit() {}
+
+
+  @Override
+  public void testPeriodic() {}
+
+
+  @Override
+  public void simulationInit() {}
+
+
+  @Override
+  public void simulationPeriodic() {}
+}
