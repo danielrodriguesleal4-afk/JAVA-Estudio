@@ -1,0 +1,20 @@
+@Override
+public void teleopPeriodic() {
+
+    // Y = 100% de velocidade
+    if (m_xboxController.getYButton()) {
+        velocidade = 1.0;
+    }
+
+    // X = 50% de velocidade
+    if (m_xboxController.getXButton()) {
+        velocidade = 0.5;
+    }
+
+    // A = liga o motor
+    if (m_xboxController.getAButton()) {
+        m_motor.set(velocidade);
+    } else {
+        m_motor.set(0);
+    }
+}
