@@ -1,0 +1,89 @@
+package frc.robot;
+
+import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.DriverStation;
+
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+
+public class Robot extends TimedRobot {
+
+  // ========================================= //
+  // ================ MOTOR ================== //
+  // ========================================= //
+
+  // Motor conectado no CAN ID 14
+  private final SparkMax m_intakeMotor =
+      new SparkMax(14, MotorType.kBrushed);
+
+
+  // ========================================= //
+  // ============== LIMELIGHT ================ //
+  // ========================================= //
+
+  // NetworkTable da Limelight
+  private final NetworkTable limelight =
+      NetworkTableInstance.getDefault().getTable("limelight");
+
+
+  // ID da AprilTag que queremos detectar
+  private static final int TARGET_ID = 1;
+
+
+  // Velocidade do motor = 70%
+  private static final double MOTOR_SPEED = 0.70;
+
+
+  // =========================================
+  // ROBOT PERIODIC
+  // =========================================
+
+  @Override
+  public void robotPeriodic() {
+
+    // Se o robô estiver desabilitado, garante que o motor está parado
+    if (!DriverStation.isEnabled()) {
+      m_intakeMotor.set(0.0);
+      return;
+    }
+
+
+    // =========================================
+    // VERIFICA SE A LIMELIGHT ENCONTROU UM ALVO
+    // =========================================
+
+    double tv =
+        limelight.getEntry("tv").getDouble(0);
+
+
+    // =========================================
+    // PEGA O ID DA APRILTAG
+    // =========================================
+
+    double tid =
+        limelight.getEntry("tid").getDouble(-1);
+
+
+    // =========================================
+    // VERIFICA A APRILTAG
+    // =========================================
+
+    if (tv == 1 && tid == TARGET_ID) {
+
+      // AprilTag ID 1 encontrada
+      // Motor gira a 70%
+
+      m_intakeMotor.set(MOTOR_SPEED);
+
+    } else {
+
+      // AprilTag ID 1 não encontrada
+      // Motor para
+
+      m_intakeMotor.set(0.0);
+    }
+  }
+}
