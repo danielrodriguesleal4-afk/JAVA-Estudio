@@ -1,0 +1,222 @@
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
+
+package frc.robot;
+
+// Importações de controles do robô.
+import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+// Importação de SparkMax e tipo de controle.
+import com.revrobotics.spark.SparkMax; 
+import com.revrobotics.spark.SparkLowLevel.MotorType; 
+
+// Importação da Limelight.
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+
+
+// ========================================================== //
+
+
+/**
+ * The methods in this class are called automatically corresponding to each mode, as described in
+ * the TimedRobot documentation. If you change the name of this class or the package after creating
+ * this project, you must also update the Main.java file in the project.
+ */
+
+
+public class Robot extends TimedRobot {
+
+  private static final String kDefaultAuto = "Default";
+  private static final String kCustomAuto = "My Auto";
+
+  private String m_autoSelected;
+  private final SendableChooser<String> m_chooser = new SendableChooser<>();
+
+  // ============================
+  // ========== MOTORES
+
+  private final SparkMax m_intakeMotor = 
+      new SparkMax(14, MotorType.kBrushed); // Motor 14.
+
+  // ----------------------->
+
+  // ======================= 
+  // ==== Controle Xbox ==== 
+
+  // Porta 0 do Driver Station.
+  private final XboxController m_xboxController =
+        new XboxController(0);
+
+  // Controle de velocidade.
+  private double velocidade = 0.5;
+
+   // ------------------------>
+
+
+  // =========================
+  // ======= Limelight ======= 
+
+  // NetworkTable da limelight
+  private final NetworkTable limelight = 
+        NetworkTableInstance.getDefault().getTable("limelight");
+
+  // ID da AprilTag.
+  private static final int TARGET_ID = 1;
+
+  /**
+   * This function is run when the robot is first started up and should be used for any
+   * initialization code.
+   */
+
+  public Robot() {
+
+    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
+
+    m_chooser.addOption("My Auto", kCustomAuto);
+
+    SmartDashboard.putData("Auto choices", m_chooser);
+
+  }
+
+  /**
+   * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
+   * that you want ran during disabled, autonomous, teleoperated and test.
+   *
+   * <p>This runs after the mode specific periodic functions, but before LiveWindow and
+   * SmartDashboard integrated updating.
+   */
+  @Override
+  public void robotPeriodic() {
+
+
+}
+  /**
+   * This autonomous (along with the chooser code above) shows how to select between different
+   * autonomous modes using the dashboard. The sendable chooser code works with the Java
+   * SmartDashboard. If you prefer the LabVIEW Dashboard, remove all of the chooser code and
+   * uncomment the getString line to get the auto name from the text box below the Gyro
+   *
+   * <p>You can add additional auto modes by adding additional comparisons to the switch structure
+   * below with additional strings. If using the SendableChooser make sure to add them to the
+   * chooser code above as well.
+   */
+  @Override
+  public void autonomousInit() {
+
+    m_autoSelected = m_chooser.getSelected();
+
+    m_intakeMotor.set(0.0);
+    
+    System.out.println("Auto selected: " + m_autoSelected);
+  }
+
+  /** This function is called periodically during autonomous. */
+  @Override
+  public void autonomousPeriodic() {
+
+   // switch (m_autoSelected) {
+
+    //  case kCustomAuto:
+
+      // ======== Limelight ======= //
+
+      System.out.println("AUTO: " + m_autoSelected);
+
+  // Verifica se a limelight encontrou o alvo.
+  double tv = limelight.getEntry("tv").getDouble(0);
+
+  // Lê o ID da AprilTeg.
+  int tid = (int) limelight.getEntry("tid").getDouble(-1);
+
+  System.out.println("Tv: " + tv + " | TID: " + tid);
+
+  // Verifica SE ele encontrou o alvo desejado.
+  if (tv == 1 && tid == TARGET_ID) {
+
+    // Motor gira
+    m_intakeMotor.set(0.7);
+
+  } else {
+
+    // Caso CONTRÁRIO, motor para.
+    m_intakeMotor.set(0);
+
+    }
+    //    break;
+
+    //  case kDefaultAuto:
+    // default:
+        // Put default auto code here
+    //    break;
+
+    // }
+  }
+
+  /** This function is called once when teleop is enabled. */
+  @Override
+  public void teleopInit() {
+
+    m_intakeMotor.set(0.0);
+
+  }
+
+  /** This function is called periodically during operator control. */
+  @Override
+  public void teleopPeriodic() {
+
+    // Velocidade do Motor 100%
+    if (m_xboxController.getYButton()) {
+      velocidade = 1.0;
+    }
+
+    // Velocidade do Motor 50%
+    if (m_xboxController.getXButton()) {
+      velocidade = 0.5;
+    }
+
+    // Ligar o Motor
+    if (m_xboxController.getAButton()) {
+      m_intakeMotor.set(velocidade);
+
+    } 
+    
+    else {
+      m_intakeMotor.set(0.0);
+      
+    }
+
+  }
+
+  /** This function is called once when the robot is disabled. */
+  @Override
+  public void disabledInit() {
+
+    m_intakeMotor.set(0.0);
+
+  }
+
+  /** This function is called periodically when disabled. */
+  @Override
+  public void disabledPeriodic() {}
+
+  /** This function is called once when test mode is enabled. */
+  @Override
+  public void testInit() {}
+
+  /** This function is called periodically during test mode. */
+  @Override
+  public void testPeriodic() {}
+
+  /** This function is called once when the robot is first started up. */
+  @Override
+  public void simulationInit() {}
+
+  /** This function is called periodically whilst in simulation. */
+  @Override
+  public void simulationPeriodic() {}
+}
