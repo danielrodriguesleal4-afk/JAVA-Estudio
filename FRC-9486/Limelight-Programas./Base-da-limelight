@@ -1,4 +1,4 @@
-package frc.Limelight;
+package frc.limelight;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -50,14 +50,12 @@ public class Robot extends TimedRobot {
       return;
     }
 
-
     // =========================================
     // VERIFICA SE A LIMELIGHT ENCONTROU UM ALVO
     // =========================================
 
     double tv =
         limelight.getEntry("tv").getDouble(0);
-
 
     // =========================================
     // PEGA O ID DA APRILTAG
@@ -66,12 +64,11 @@ public class Robot extends TimedRobot {
     double tid =
         limelight.getEntry("tid").getDouble(-1);
 
-
     // =========================================
     // VERIFICA A APRILTAG
     // =========================================
 
-    if (tv == 1 && tid == TARGET_ID) {
+    if (tv != 0 && tid == TARGET_ID) {
 
       // AprilTag ID 1 encontrada
       // Motor gira a 70%
